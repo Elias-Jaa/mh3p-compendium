@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MH3P — Hunter's Compendium</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --surface: #111114;
+    --surface2: #18181d;
+    --border: #27272f;
+    --border-bright: #3a3a46;
+    --accent: #c8922a;
+    --accent2: #f0b432;
+    --text: #ddd8cc;
+    --muted: #6a6570;
+    --fire:     #ff5230;
+    --water:    #2690ff;
+    --thunder:  #f0ca00;
+    --ice:      #44d4ff;
+    --dragon:   #b040ff;
+    --poison:   #88d430;
+    --para:     #f0b800;
+    --sleep:    #66aaff;
+    --trap-yes: #44cc66;
+    --trap-no:  #663333;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: rgba(10,10,12,0.96);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--accent);
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 56px;
+    box-shadow: 0 4px 40px rgba(200,146,42,0.12);
+  }
+  header .logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    color: var(--accent2);
+    text-shadow: 0 0 18px rgba(240,180,50,0.35);
+    white-space: nowrap;
+  }
+  header .logo span {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    display: block;
+    margin-top: -2px;
+  }
+  .divider-line { width: 1px; height: 28px; background: var(--border-bright); flex-shrink: 0; }
+  .tabs { display: flex; gap: 0; }
+  .tab {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    padding: 8px 18px;
+    color: var(--muted);
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    transition: all 0.2s;
+    user-select: none;
+    position: relative;
+    top: 1px;
+  }
+  .tab.active { color: var(--accent2); border-color: var(--border-bright); border-bottom-color: var(--bg); background: var(--surface); }
+  .tab:hover:not(.active) { color: var(--text); }
+  .search-wrap { margin-left: auto; position: relative; }
+  .search-wrap::before {
+    content: '⌕';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 1rem;
+    pointer-events: none;
+  }
+  #searchInput {
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+    padding: 6px 12px 6px 30px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    outline: none;
+    width: 220px;
+    transition: border-color 0.2s, width 0.3s;
+  }
+  #searchInput:focus { border-color: var(--accent); width: 260px; }
+  #searchInput::placeholder { color: var(--muted); }
+  .content { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; }
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    padding: 20px 0 8px 12px;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, var(--surface2) 0%, transparent 100%);
+    border-left: 3px solid var(--accent);
+  }
+  .monster-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: row;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    animation: fadeUp 0.3s ease both;
+    overflow: hidden;
+  }
+  .card:hover { border-color: var(--border-bright); transform: translateX(4px); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .card-icon {
+    background: #0e0e11;
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    min-width: 80px;
+    width: 80px;
+  }
+  .card-icon img { width: 56px; height: 56px; object-fit: contain; opacity: 0.85; transition: opacity 0.2s; }
+  .card:hover .card-icon img { opacity: 1; }
+  .card-icon .fallback { font-size: 2rem; opacity: 0.3; }
+  .card-body { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: center; }
+  .card-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .m-name { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: 0.05em; line-height: 1.2; }
+  .m-type { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; flex-shrink: 0; }
+  .data-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  .data-block { flex: 1; min-width: 150px; }
+  .data-lbl { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; display: block; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em; padding: 2px 8px; border: 1px solid; white-space: nowrap; }
+  .e-fire     { color: var(--fire);    border-color: rgba(255,82,48,0.4);    background: rgba(255,82,48,0.08); }
+  .e-water    { color: var(--water);   border-color: rgba(38,144,255,0.4);   background: rgba(38,144,255,0.08); }
+  .e-thunder  { color: var(--thunder); border-color: rgba(240,202,0,0.4);    background: rgba(240,202,0,0.08); }
+  .e-ice      { color: var(--ice);     border-color: rgba(68,212,255,0.4);   background: rgba(68,212,255,0.08); }
+  .e-dragon   { color: var(--dragon);  border-color: rgba(176,64,255,0.4);   background: rgba(176,64,255,0.08); }
+  .e-none     { color: var(--muted);   border-color: var(--border);          background: transparent; }
+  .s-poison   { color: var(--poison);  border-color: rgba(136,212,48,0.4);   background: rgba(136,212,48,0.08); }
+  .s-para     { color: var(--para);    border-color: rgba(240,184,0,0.4);    background: rgba(240,184,0,0.08); }
+  .s-sleep    { color: var(--sleep);   border-color: rgba(102,170,255,0.4);  background: rgba(102,170,255,0.08); }
+  .s-none     { color: var(--muted);   border-color: var(--border);          background: transparent; }
+  .trap-row { display: flex; gap: 8px; padding-top: 4px; flex-wrap: wrap; }
+  .trap-pill { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; border: 1px solid; display: inline-flex; align-items: center; gap: 5px; }
+  .trap-yes { color: var(--trap-yes); border-color: rgba(68,204,102,0.35); background: rgba(68,204,102,0.07); }
+  .trap-no  { color: var(--trap-no);  border-color: rgba(102,51,51,0.5);   background: rgba(102,51,51,0.1);  opacity: 0.6; }
+  .trap-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .card-note { font-size: 0.68rem; font-style: italic; color: var(--accent2); background: rgba(200,146,42,0.08); padding: 4px 8px; border-left: 2px solid var(--accent); margin-top: 2px; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 0.9rem; letter-spacing: 0.1em; }
+  @media (max-width: 768px) {
+    header { flex-wrap: wrap; height: auto; padding: 10px 14px; gap: 10px; }
+    .search-wrap { width: 100%; }
+    #searchInput { width: 100%; }
+    #searchInput:focus { width: 100%; }
+    .card-icon { min-width: 65px; width: 65px; }
+    .card-icon img { width: 45px; height: 45px; }
+    .data-row { flex-direction: column; gap: 8px; }
+    .data-block { min-width: auto; }
+    .m-name { font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">MH3P <span>HUNTER'S COMPENDIUM</span></div>
+  <div class="divider-line"></div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('large',this)">LARGE MONSTERS</div>
+    <div class="tab" onclick="switchTab('small',this)">SMALL MONSTERS</div>
+  </div>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search monster..." oninput="filterMonsters()">
+  </div>
+</header>
+
+<div class="content"><div id="monsterContainer"></div></div>
+
+<script>
+const monsters = {
+  large: [
+    { section: "Flying Wyverns" },
+    { name: "Rathian", class: "Flying Wyvern", img: "img/rathian.png", elements: [{e:"dragon", s:"⭐⭐⭐⭐"}, {e:"thunder", s:"⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Rathalos", class: "Flying Wyvern", img: "img/rathalos.png", elements: [{e:"dragon", s:"⭐⭐⭐⭐"}, {e:"thunder", s:"⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Silver Rathalos", class: "Flying Wyvern", img: "img/silver_rathalos.png", elements: [{e:"thunder", s:"⭐⭐"}, {e:"water", s:"⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Gold Rathian", class: "Flying Wyvern", img: "img/gold_rathian.png", elements: [{e:"thunder", s:"⭐⭐"}, {e:"water", s:"⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Green Nargacuga", class: "Flying Wyvern", img: "img/green_nargacuga.png", elements: [{e:"thunder", s:"⭐⭐⭐"}, {e:"fire", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Barioth", class: "Flying Wyvern", img: "img/barioth.png", elements: [{e:"fire", s:"⭐⭐⭐"}, {e:"thunder", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Sand Barioth", class: "Flying Wyvern", img: "img/Sable_barioth.png", elements: [{e:"ice", s:"⭐⭐⭐"}, {e:"thunder", s:"⭐⭐"}, {e:"water", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Tigrex", class: "Flying Wyvern", img: "img/tigrex.png", elements: [{e:"thunder", s:"⭐⭐⭐⭐"}, {e:"water", s:"⭐⭐"}, {e:"dragon", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Berserk Tigrex", class: "Flying Wyvern", img: "img/black_tigrex.png", elements: [{e:"water", s:"⭐⭐⭐"}, {e:"dragon", s:"⭐⭐"}, {e:"thunder", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Jade Barroth", class: "Flying Wyvern", img: "img/jade_barroth.png", elements: [{e:"ice", s:"⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Gigginox", class: "Flying Wyvern", img: "img/gigginox.png", elements: [{e:"fire", s:"⭐⭐⭐⭐"}, {e:"dragon", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Baleful Gigginox", class: "Flying Wyvern", img: "img/green_gigginox.png", elements: [{e:"water", s:"⭐⭐⭐⭐"}, {e:"dragon", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Agnaktor", class: "Flying Wyvern", img: "img/agnaktor.png", elements: [{e:"water", s:"⭐⭐⭐⭐"}, {e:"ice", s:"⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Glacial Agnaktor", class: "Flying Wyvern", img: "img/ice_agnaktor.png", elements: [{e:"fire", s:"⭐⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Diablos", class: "Flying Wyvern", img: "img/diablos.png", elements: [{e:"ice", s:"⭐⭐⭐"}, {e:"water", s:"⭐⭐"}, {e:"thunder", s:"⭐⭐"}, {e:"dragon", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Black Diablos", class: "Flying Wyvern", img: "img/black_diablos.png", elements: [{e:"ice", s:"⭐⭐⭐"}, {e:"water", s:"⭐⭐"}, {e:"thunder", s:"⭐⭐"}, {e:"dragon", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { section: "Leviathans" },
+    { name: "Royal Ludroth", class: "Leviathan", img: "img/rludroth.png", elements: [{e:"fire", s:"⭐⭐⭐⭐"}, {e:"thunder", s:"⭐⭐"}, {e:"ice", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Purple Ludroth", class: "Leviathan", img: "img/pink_rludroth.png", elements: [{e:"fire", s:"⭐⭐⭐"}, {e:"thunder", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Nibelsnarf", class: "Leviathan", img: "img/niberlsnarf.png", elements: [{e:"ice", s:"⭐⭐⭐"}, {e:"thunder", s:"⭐⭐"}, {e:"water", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: false, shock: true } },
+    { section: "Brute Wyverns" },
+    { name: "Deviljho", class: "Brute Wyvern", img: "img/deviljho.png", elements: [{e:"dragon", s:"⭐⭐⭐"}, {e:"thunder", s:"⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Uragaan", class: "Brute Wyvern", img: "img/uragaan.png", elements: [{e:"water", s:"⭐⭐⭐⭐"}, {e:"dragon", s:"⭐⭐⭐⭐"}, {e:"ice", s:"⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Steel Uragaan", class: "Brute Wyvern", img: "img/steel_uragaan.png", elements: [{e:"water", s:"⭐⭐⭐⭐"}, {e:"dragon", s:"⭐⭐⭐⭐"}, {e:"ice", s:"⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Duramboros", class: "Brute Wyvern", img: "img/duramboros.png", elements: [{e:"fire", s:"⭐⭐⭐"}, {e:"ice", s:"⭐⭐"}, {e:"thunder", s:"⭐⭐"}, {e:"dragon", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { section: "Fanged Beasts" },
+    { name: "Zinogre", class: "Fanged Beast", img: "img/zinogre.png", elements: [{e:"ice", s:"⭐⭐⭐"}, {e:"fire", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: false } },
+    { name: "Lagombi", class: "Fanged Beast", img: "img/lagombi.png", elements: [{e:"fire", s:"⭐⭐⭐⭐"}, {e:"thunder", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Volvidon", class: "Fanged Beast", img: "img/volvidon.png", elements: [{e:"water", s:"⭐⭐⭐"}, {e:"ice", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Arzuros", class: "Fanged Beast", img: "img/arzuros.png", elements: [{e:"fire", s:"⭐⭐⭐⭐"}, {e:"ice", s:"⭐⭐⭐"}, {e:"thunder", s:"⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { section: "Bird Wyverns" },
+    { name: "Qurupeco", class: "Bird Wyvern", img: "img/qurupeco.png", elements: [{e:"ice", s:"⭐⭐⭐⭐"}, {e:"water", s:"⭐⭐⭐"}, {e:"thunder", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { name: "Crimson Qurupeco", class: "Bird Wyvern", img: "img/vermillon_qurupeco.png", elements: [{e:"ice", s:"⭐⭐⭐⭐"}, {e:"fire", s:"⭐⭐"}, {e:"water", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: true, shock: true } },
+    { section: "Elder Dragons" },
+    { name: "Akantor", class: "Elder Dragon", img: "img/akantor.png", elements: [{e:"dragon", s:"⭐⭐⭐⭐"}, {e:"thunder", s:"⭐⭐⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}], traps: { pitfall: false, shock: false } },
+    { name: "Ukanlos", class: "Elder Dragon", img: "img/ukanlos.png", elements: [{e:"fire", s:"⭐⭐⭐⭐"}, {e:"thunder", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: false, shock: false } },
+    { name: "Jhen Mohran", class: "Elder Dragon", img: "img/jhen_mohran.png", elements: [{e:"dragon", s:"⭐⭐⭐⭐"}, {e:"ice", s:"⭐⭐⭐⭐"}, {e:"thunder", s:"⭐⭐"}, {e:"water", s:"⭐⭐"}], statuses: [], traps: { pitfall: false, shock: false } },
+    { name: "Alatreon", class: "Elder Dragon", img: "img/alatreon.png", elements: [{e:"water", s:"⭐⭐"}], statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: false, shock: false } },
+    { name: "Amatsu", class: "Elder Dragon", img: "img/amatsu.png", elements: [{e:"dragon", s:"⭐⭐⭐⭐"}, {e:"fire", s:"⭐⭐⭐"}],statuses: [{e:"poison", s:""}, {e:"para", s:""}, {e:"sleep", s:""}], traps: { pitfall: false, shock: false } }
+  ],
+  small: [
+    { section: "Small Monsters" },
+    { name: "Bulldrome", class: "Fanged Beast", img: "img/bulldrome.png" },
+    { name: "Jaggi", class: "Bird Wyvern", img: "img/jaggi.png" },
+    { name: "Baggi", class: "Bird Wyvern", img: "img/baggi.png" },
+    { name: "Wroggi", class: "Bird Wyvern", img: "img/wroggi.png" }
+  ]
+};
+
+const EL_CLASS = { fire:"e-fire", water:"e-water", thunder:"e-thunder", ice:"e-ice", dragon:"e-dragon" };
+const ST_CLASS = { poison:"s-poison", para:"s-para", sleep:"s-sleep", stun:"s-stun", exhaust:"s-exhaust", blast:"s-blast" };
+const LABELS = { fire:"Fire", water:"Water", thunder:"Thunder", ice:"Ice", dragon:"Dragon", poison:"Poison", para:"Paralysis", sleep:"Sleep", stun:"Stun", exhaust:"Exhaust", blast:"Blast" };
+const TRAP_NAMES = { pitfall: "Pitfall", shock: "Shock" };
+
+let currentTab = 'large';
+
+function render(query = '') {
+  const container = document.getElementById('monsterContainer');
+  container.innerHTML = '';
+  const data = monsters[currentTab];
+  let delay = 0;
+  let hasResults = false;
+  let currentSection = null;
+  let sectionList = null;
+
+  data.forEach(entry => {
+    if (entry.section) { currentSection = entry.section; sectionList = null; return; }
+    if (!entry.name) return;
+    if (query && !entry.name.toLowerCase().includes(query)) return;
+    hasResults = true;
+
+    if (!sectionList && !query) {
+      const sectionLabel = document.createElement('div');
+      sectionLabel.className = 'section-label';
+      sectionLabel.textContent = currentSection || '';
+      container.appendChild(sectionLabel);
+      sectionList = document.createElement('div');
+      sectionList.className = 'monster-list';
+      container.appendChild(sectionList);
+    }
+
+    const target = (sectionList && !query) ? sectionList : container;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.animationDelay = `${delay * 25}ms`;
+    delay++;
+
+    // Condition ICI : Si c'est l'onglet "large", on affiche tout. Si c'est "small", on affiche QUE le titre.
+    let detailsHtml = '';
+    if (currentTab === 'large') {
+      const statusTags = (entry.statuses || []).length > 0
+        ? entry.statuses.map(s => `<span class="tag ${ST_CLASS[s.e] || 's-none'}">${LABELS[s.e] || s.e} ${s.s}</span>`).join('')
+        : `<span class="tag s-none">—</span>`;
+
+      const elemTags = (entry.elements || []).length > 0
+        ? entry.elements.map(e => `<span class="tag ${EL_CLASS[e.e] || 'e-none'}">${LABELS[e.e] || e.e} ${e.s}</span>`).join('')
+        : `<span class="tag e-none">—</span>`;
+
+      const traps = entry.traps || {};
+      const trapPills = Object.keys(TRAP_NAMES).map(k => {
+        const yes = !!traps[k];
+        return `<span class="trap-pill ${yes ? 'trap-yes' : 'trap-no'}"><span class="trap-dot"></span>${TRAP_NAMES[k]}</span>`;
+      }).join('');
+
+      detailsHtml = `
+        <div class="data-row">
+          <div class="data-block">
+            <span class="data-lbl">Weaknesses</span>
+            <div class="tags">${elemTags}</div>
+          </div>
+          <div class="data-block">
+            <span class="data-lbl">Status</span>
+            <div class="tags">${statusTags}</div>
+          </div>
+        </div>
+        <div class="trap-row">${trapPills}</div>
+        ${entry.note ? `<div class="card-note">${entry.note}</div>` : ''}
+      `;
+    }
+
+    card.innerHTML = `
+      <div class="card-icon">
+        <img src="${entry.img}" alt="${entry.name}" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\'fallback\\'>🐉</span>'">
+      </div>
+      <div class="card-body">
+        <div class="card-title">
+          <span class="m-name">${entry.name}</span>
+          <span class="m-type">${entry.class}</span>
+        </div>
+        ${detailsHtml}
+      </div>
+    `;
+    target.appendChild(card);
+  });
+}
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('searchInput').value = '';
+  render();
+}
+
+function filterMonsters() {
+  render(document.getElementById('searchInput').value.toLowerCase().trim());
+}
+
+render();
+</script>
+</body>
+</html>
